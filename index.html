@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cover Studio</title>
+<meta name="description" content="Make cover art for blog posts and projects: a pipeline, layers or a network of icons, in your own colours, as a dark and a light SVG.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Cover Studio</h1>
+    <p class="sub">Cover art for posts and projects, in your own colours. Every cover comes as a dark and a light SVG.</p>
+  </div>
+  <a class="ghost" href="https://github.com/elkushi/cover-studio#readme">How it works</a>
+</header>
+
+<main class="layout">
+  <form id="form" class="panel" autocomplete="off" onsubmit="return false">
+
+    <fieldset>
+      <legend>1. Shape</legend>
+      <div class="motifs" role="radiogroup">
+        <label class="motif"><input type="radio" name="motif" value="flow"><span><b>Flow</b>Steps left to right. One step can be a gate that checks the work.</span></label>
+        <label class="motif"><input type="radio" name="motif" value="layers"><span><b>Layers</b>A system in stacked layers. The first icon is the top layer.</span></label>
+        <label class="motif"><input type="radio" name="motif" value="network"><span><b>Network</b>One thing in the middle and what it uses. The first icon is the centre.</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>2. Icons <span class="hint">2 to 7</span></legend>
+      <ol id="rows" class="rows"></ol>
+      <div class="row-actions">
+        <button type="button" id="add" class="btn">Add icon</button>
+        <span class="hint">Browse <a href="https://lucide.dev/icons" target="_blank" rel="noopener">Lucide</a> or <a href="https://tabler.io/icons" target="_blank" rel="noopener">Tabler</a> and type the icon's name.</span>
+      </div>
+      <p class="hint">Quick pick, adds to the list:</p>
+      <div id="quick" class="chips"></div>
+      <div class="opts">
+        <label id="opt-gate">Gate <select id="gate"></select></label>
+        <label id="opt-hot">Highlighted layer <select id="hot"></select></label>
+        <label id="opt-seed">Layout <input id="seed" type="number" min="1" max="9999" step="1"> <button type="button" id="shuffle" class="btn small">Shuffle</button></label>
+      </div>
+      <p class="hint">Labels are optional. Short, code-like labels (<code>tools/</code>, <code>schema</code>) work in every language.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>3. Size</legend>
+      <div class="opts">
+        <label>Preset
+          <select id="size">
+            <option value="1200x630">Blog and link preview, 1200 × 630</option>
+            <option value="1600x900">Wide, 1600 × 900</option>
+            <option value="1080x1080">Square post, 1080 × 1080</option>
+            <option value="1080x1350">Portrait post, 1080 × 1350</option>
+            <option value="1500x500">Banner, 1500 × 500</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label>W <input id="w" type="number" min="200" max="4000" step="10"></label>
+        <label>H <input id="h" type="number" min="200" max="4000" step="10"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>4. Colours</legend>
+      <div class="opts">
+        <label>Colour set <select id="preset"></select></label>
+      </div>
+      <div class="swatches">
+        <div class="swatch-head"><span></span><span>Dark</span><span>Light</span></div>
+        <div id="swatches"></div>
+      </div>
+      <details class="import">
+        <summary>Use a project's colours</summary>
+        <p class="hint">Paste the project's CSS, or just its <code>:root { … }</code> block. Colour variables like <code>--surface-000</code>, <code>--bg</code>, <code>--text</code>, <code>--border</code> and <code>--accent</code> are picked up.</p>
+        <textarea id="css" rows="6" spellcheck="false" placeholder=":root { --bg: #0b0b10; --text: #f4f4f5; --accent: #22d3ee; … }"></textarea>
+        <div class="opts">
+          <label>The <code>:root</code> colours are <select id="rootis"><option value="dark">dark</option><option value="light">light</option></select></label>
+          <button type="button" id="import" class="btn small">Use these colours</button>
+        </div>
+        <p id="import-msg" class="hint" aria-live="polite"></p>
+      </details>
+    </fieldset>
+
+    <fieldset>
+      <legend>5. File</legend>
+      <div class="opts">
+        <label class="grow">File name <input id="slug" type="text" pattern="[a-z0-9-]+" placeholder="my-post"></label>
+      </div>
+      <label class="block">Description for screen readers <input id="alt" type="text" placeholder="A request passes three checks before it reaches the server"></label>
+      <label class="check"><input id="animate" type="checkbox"> Gentle motion on the lines (stops for visitors who ask for less motion)</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>6. Settings</legend>
+      <p class="hint">Your last cover is kept in this browser. Save settings to a file to reuse them in another project.</p>
+      <div class="row-actions">
+        <button type="button" id="save" class="btn">Save settings</button>
+        <label class="btn">Open settings<input id="load" type="file" accept="application/json,.json" hidden></label>
+        <button type="button" id="reset" class="btn">Start over</button>
+      </div>
+    </fieldset>
+  </form>
+
+  <section class="preview" aria-label="Preview">
+    <div class="sticky">
+      <figure class="frame dark"><img id="img-dark" alt=""><figcaption>Dark</figcaption></figure>
+      <figure class="frame light"><img id="img-light" alt=""><figcaption>Light</figcaption></figure>
+      <p id="status" class="status" aria-live="polite"></p>
+      <div class="exports">
+        <button type="button" class="btn primary" data-dl="both">Download both SVGs</button>
+        <button type="button" class="btn" data-dl="dark">Dark SVG</button>
+        <button type="button" class="btn" data-dl="light">Light SVG</button>
+        <button type="button" class="btn" data-png="dark">Dark PNG</button>
+        <button type="button" class="btn" data-png="light">Light PNG</button>
+        <button type="button" class="btn" id="copy-svg">Copy dark SVG</button>
+        <button type="button" class="btn" id="copy-html">Copy HTML</button>
+      </div>
+      <p class="hint">The HTML shows the dark cover to visitors in dark mode and the light one to everyone else.</p>
+    </div>
+  </section>
+</main>
+
+<script src="palettes.js"></script>
+<script src="draw.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
